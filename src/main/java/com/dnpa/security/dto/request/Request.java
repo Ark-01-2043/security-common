@@ -19,5 +19,6 @@ public class Request implements Serializable {
     private Map<String, String> parameters;
     private Map<String, String> headers;
     private String body;
+    private String ipAddress;
     private CustomUserDetails userDetails;
 }

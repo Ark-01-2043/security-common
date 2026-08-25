@@ -32,8 +32,24 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         BufferedRequestWrapper bufferedRequest = new BufferedRequestWrapper(request);
         BufferedResponseWrapper bufferedResponse = new BufferedResponseWrapper(response);
 
+        String ipAddress = request.getHeader("X-User-IP");
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = request.getHeader("X-Forwarded-For");
+        }
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = request.getRemoteAddr();
+        }
+
         Request requestInput;
-        requestInput = Request.builder().method(request.getMethod()).url(getFullURL(request)).parameters(requestMap).body(bufferedRequest.getRequestBody()).screenId(request.getHeader(SCREEN_ID_HEADER)).headers(getHeaders(request)).build();
+        requestInput = Request.builder()
+                .method(request.getMethod())
+                .url(getFullURL(request))
+                .parameters(requestMap)
+                .body(bufferedRequest.getRequestBody())
+                .screenId(request.getHeader(SCREEN_ID_HEADER))
+                .headers(getHeaders(request))
+                .ipAddress(ipAddress)
+                .build();
 
         filterChain.doFilter(bufferedRequest, bufferedResponse);
 
