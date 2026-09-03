@@ -31,7 +31,7 @@ public class JwtTokenProvider {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            log.info("Key: " + secretKey);
+            log.info("Key: {}", secretKey);
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(authToken);
             return true;
         } catch (MalformedJwtException ex) {

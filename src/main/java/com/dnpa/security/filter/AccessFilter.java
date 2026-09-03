@@ -44,7 +44,7 @@ public class AccessFilter extends OncePerRequestFilter {
             ThreadContext.put("APIUrl", path);
             ThreadContext.put("UUID", String.valueOf(UUID.randomUUID()));
             if (!request.getRequestURI().contains("actuator/health")) {
-                log.info("Start API: " + path);
+                log.info("Start API: {}", path);
             }
             String superUser = request.getHeader(SUPER_USER_HEADER);
             if ((superUser != null && superUser.equals(SUPER_USER)) || PublicApi.isPublicApi(request.getRequestURI())

@@ -64,14 +64,14 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         requestInput.setUserDetails(customUserDetails);
 
         Gson gson = new GsonBuilder().create();
-        log.info("request=" + gson.toJson(requestInput)
+        log.info("request={}", gson.toJson(requestInput)
                 .replace("\"{", "{")
                 .replace("}\"", "}")
                 .replace("\\\"", "\"")
                 .replace("\\u003d", "=")
                 .replace("\\u0026", "&")
         );
-        log.info("response=" + gson.toJson(bufferedResponse.getContent())
+        log.info("response={}", gson.toJson(bufferedResponse.getContent())
                 .replace("\"{", "{")
                 .replace("}\"", "}")
                 .replace("\\\"", "\"")
