@@ -1,6 +1,5 @@
 package com.dnpa.security.filter;
 
-
 import com.dnpa.common.constants.PublicApi;
 
 import com.dnpa.security.core.AccountAuthentication;
@@ -28,7 +27,7 @@ import java.util.UUID;
 public class AccessFilter extends OncePerRequestFilter {
     @Autowired
     private com.dnpa.security.core.jwt.JwtTokenProvider jwtTokenProvider;
-    
+
     @Autowired
     private org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate;
 
@@ -38,7 +37,8 @@ public class AccessFilter extends OncePerRequestFilter {
     public static final String SUPER_USER_TOKEN = "DNPA29122002";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         try {
             String path = request.getRequestURI();
             ThreadContext.put("APIUrl", path);
@@ -47,9 +47,11 @@ public class AccessFilter extends OncePerRequestFilter {
                 log.info("Start API: " + path);
             }
             String superUser = request.getHeader(SUPER_USER_HEADER);
-            if ((superUser != null && superUser.equals(SUPER_USER)) || PublicApi.isPublicApi(request.getRequestURI()) || PublicApi.isWebSocketEndpoint(request.getRequestURI())) {
+            if ((superUser != null && superUser.equals(SUPER_USER)) || PublicApi.isPublicApi(request.getRequestURI())
+                    || PublicApi.isWebSocketEndpoint(request.getRequestURI())) {
                 CustomUserDetails customUserDetails = CustomUserDetails.getSuperUser();
-                AccountAuthentication accountAuthentication = AccountAuthentication.builder().customUserDetails(customUserDetails)
+                AccountAuthentication accountAuthentication = AccountAuthentication.builder()
+                        .customUserDetails(customUserDetails)
                         .accessToken(SUPER_USER_TOKEN).build();
                 SecurityContextHolder.getContext()
                         .setAuthentication(accountAuthentication);
@@ -57,16 +59,18 @@ public class AccessFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-            
+
             String jwt = getJwtFromCookie(request);
             if (jwt != null && !jwt.isEmpty() && jwtTokenProvider.validateJwtToken(jwt)) {
                 String sessionId = jwtTokenProvider.getSessionIdFromJWT(jwt);
                 if (sessionId != null) {
                     String sessionJson = stringRedisTemplate.opsForValue().get("session:" + sessionId);
-                    if (sessionJson != null && sessionJson.contains("\"status\":1")) { // Simple check for active session
+                    if (sessionJson != null && sessionJson.contains("\"status\":1")) { // Simple check for active
+                                                                                       // session
                         Long userId = jwtTokenProvider.getUserIdFromJWT(jwt);
-                        CustomUserDetails customUserDetails = CustomUserDetails.build(userId, userId.toString(), java.util.List.of("USER"));
-                        
+                        CustomUserDetails customUserDetails = CustomUserDetails.build(userId, userId.toString(),
+                                java.util.List.of("USER"));
+
                         SecurityContextHolder.getContext().setAuthentication(
                                 AccountAuthentication.builder()
                                         .customUserDetails(customUserDetails)
@@ -79,9 +83,8 @@ public class AccessFilter extends OncePerRequestFilter {
             }
             response.setStatus(HttpStatus.SC_UNAUTHORIZED);
 
-
         } catch (Exception e) {
-            log.error("AccessFilter: " + e);
+            log.error("AccessFilter: ", e);
 
             response.setStatus(HttpStatus.SC_UNAUTHORIZED);
         }
@@ -89,7 +92,7 @@ public class AccessFilter extends OncePerRequestFilter {
 
     private String getJwtFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if(Objects.isNull(cookies)) {
+        if (Objects.isNull(cookies)) {
             return "";
         }
         for (Cookie cookie : cookies) {
@@ -102,5 +105,3 @@ public class AccessFilter extends OncePerRequestFilter {
         return "";
     }
 }
-
-
